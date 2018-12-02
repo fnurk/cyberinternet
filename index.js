@@ -29,6 +29,9 @@ io.on('connection', function(socket){
         console.log(msg.user + ' disconnected!' )
         io.emit("user_list", {"users" : members})
     })
+    socket.on('player_update', function(playerUpdate){
+        io.emit("player_update", playerUpdate)
+    })
   });
 
 http.listen(port, () =>

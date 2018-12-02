@@ -1,9 +1,14 @@
 export default class Game{
+    otherPlayerUpdate(playerUpdate){
+        this.stage.addChild(new OtherPlayer(playerUpdate))
+    }
     constructor(socket,container){
         this.app = new PIXI.Application(640,480, { backgroundColor: 0xF0F0F0});
-        this.stage = this.app.stage
+        var stage = this.app.stage
         container.append(this.app.view);
         console.log(this.app.renderer instanceof PIXI.WebGLRenderer);
+
+        var otherPlayers = {}
 
         let up = keyboard("ArrowUp");
         let down = keyboard("ArrowDown");
@@ -25,14 +30,37 @@ export default class Game{
         posText.style = debugTextStyle
         posText.x = 20
         posText.y = 20
-        this.stage.addChild(velText)
-        this.stage.addChild(accelText)
-        this.stage.addChild(posText)
-        var player = new Player(this.app.screen.width/2, 100,this.app.screen.width, this.app.screen.height, 0xF0F000)
-        this.stage.addChild(player.sprite)
+        stage.addChild(velText)
+        stage.addChild(accelText)
+        stage.addChild(posText)
+        var player = new Player(Math.random()*this.app.screen.width, Math.random()*this.app.screen.height,this.app.screen.width, this.app.screen.height)
+        stage.addChild(player.sprite)
 
+
+        socket.on("player_update", function(playerUpdate){
+            if(playerUpdate.uuid != player.uuid){
+                console.log("got player update")
+                if(otherPlayers[playerUpdate.uuid] == null){
+                    otherPlayers[playerUpdate.uuid] = new OtherPlayer(playerUpdate)
+                }else{
+                    console.log("updating position")
+                    otherPlayers[playerUpdate.uuid].sprite.x = playerUpdate.pos.x
+                    otherPlayers[playerUpdate.uuid].sprite.y = playerUpdate.pos.y
+                }
+            }
+        })
+
+        var lastSent = 0;
         this.app.ticker.add(function(delta){
             player.update(delta)
+            if(lastSent > 1){
+                socket.emit("player_update", new PlayerUpdate(player))
+                lastSent = 0
+            }
+            for(var uuid in otherPlayers){
+                stage.addChild(otherPlayers[uuid].sprite)
+            }
+            lastSent += delta
             velText.text = player.vel.toString()
             accelText.text = player.accel.toString()
             posText.text = player.pos.toString()
@@ -65,13 +93,43 @@ export default class Game{
     } 
 }
 
+function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
+
+class PlayerUpdate{
+    constructor(player){
+        this.uuid = player.uuid
+        this.tint = player.tint
+        this.pos = player.pos
+    }
+}
+
+class OtherPlayer{
+    constructor(playerUpdate){
+        this.tint = playerUpdate.tint
+        this.pos = playerUpdate.pos
+        this.sprite = PIXI.Sprite.fromImage("/assets/senzoface2.png");
+        this.sprite.tint = this.tint
+        this.sprite.scale.x = 0.5
+        this.sprite.scale.y = 0.5
+        this.sprite.anchor.set(0.5,1)
+    }
+}
+
 class Player{
-  constructor(posx, posy,boundsx, boundsy, tint){
-    this.tint = tint
+  constructor(posx, posy,boundsx, boundsy){
+    this.uuid = guid()
+    this.tint = this.getRandomColor()
     this.boundsx = boundsx
     this.boundsy = boundsy
     this.sprite = PIXI.Sprite.fromImage("/assets/senzoface2.png");
-    this.sprite.tint = tint
+    this.sprite.tint = this.tint
     this.sprite.anchor.set(0.5,1)
     this.pos = new Victor(posx, posy)
     this.accel = new Victor(0,0)
@@ -80,6 +138,10 @@ class Player{
     this.sprite.y = posy
     this.sprite.scale.x = 0.5
     this.sprite.scale.y = 0.5
+  }
+
+  getRandomColor() {
+    return (Math.random()*0xFFFFFF<<0)
   }
 
   update(delta){
