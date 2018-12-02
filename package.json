@@ -1,0 +1,9 @@
+{
+    "name": "webgame-test",
+    "version": "0.0.1",
+    "description": "testing .js websocket",
+    "dependencies": {
+        "express": "^4.16.4",
+        "socket.io": "^2.2.0"
+    }
+}

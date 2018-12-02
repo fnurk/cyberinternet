@@ -1,0 +1,77 @@
+body {
+    background-color: dimgrey;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 13px;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.container{
+    width: 100%;
+    display: table-row;
+}
+
+.members{
+    background-color: aqua;
+    height: 30%;
+    float: top;
+}
+
+.game{
+    display: table-cell;
+}
+
+.chat{
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    flex-wrap: wrap;
+    height: 480px;
+    top: 1em;
+    right: 1em;
+    background-color: lightblue;
+    max-width: 30%;
+}
+
+.members-count,
+.members-list,
+.messages {
+    border: 1px solid #e4e4e4;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.messages {
+    flex-grow: 1;
+    overflow: auto;
+    overflow-wrap: break-word;
+}
+.message {
+    overflow-wrap: break-word;
+    padding: 5px 0;
+}
+.message .member {
+    display: inline-block;
+}
+.member {
+    padding-right: 10px;
+    position: relative;
+    color: red;
+}
+.message-form {
+    margin-bottom: auto;
+    display: flex;
+    flex-shrink: 0;
+}
+.message-form__input {
+    margin-bottom: auto;
+    flex-grow: 1;
+    border: 1px solid #dfdfdf;
+    padding: 10px 15px;
+    font-size: 16px;
+}
+.message-form__button {
+    margin: 10px;
+}
