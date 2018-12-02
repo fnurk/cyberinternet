@@ -1,4 +1,7 @@
 import Game from "./game.js"
+import Chat from "./chat.js"
+
 var socket = io();
 
-new Game(socket, $(".game"))
+var chat = new Chat(socket)
+var game = new Game(socket, $(".game"))

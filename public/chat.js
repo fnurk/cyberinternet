@@ -1,8 +1,52 @@
-var socket = io();
-
 let members = [];
 
 var username = "haxxor"+(Math.floor(Math.random()*100));
+
+export default class Chat{
+    constructor(socket){
+        console.log("created chat")
+        $('form').submit(function(){
+            const msg = DOM.input.value;
+            if (msg === '') {
+                return;
+            }
+            DOM.input.value = '';
+            socket.emit('chat_msg', {"user": username, "message": msg});
+            return false;
+        });
+
+        function register(){
+            socket.emit('user_conn', {"user": username})
+        }
+
+        function leave(){
+            socket.emit('user_disc', {"user": username})
+        }
+
+        $(window).unload( () => {
+            leave();
+        })
+
+        socket.on('connect', error => {
+            if(error){
+                return console.error(error);
+            }
+            register();
+            console.log("CONNECTED")
+        })
+        
+        socket.on('chat_msg', function(msg){
+            addMessageToListDOM(msg)
+            //msgSound()
+        });
+
+        socket.on('user_list', function(msg){
+            console.log(msg.users)
+            members = msg.users
+            updateMembersDOM();
+        });
+    }
+}
 
 const DOM = {
     membersCount: document.querySelector('.members-count'),
@@ -45,48 +89,6 @@ function addMessageToListDOM(message) {
     }
 }
     
-
-$('form').submit(function(){
-    const msg = DOM.input.value;
-    if (msg === '') {
-        return;
-      }
-    DOM.input.value = '';
-    socket.emit('chat_msg', {"user": username, "message": msg});
-    return false;
-  });
-
-function register(){
-    socket.emit('user_conn', {"user": username})
-}
-
-function leave(){
-    socket.emit('user_disc', {"user": username})
-}
-
-$(window).unload( () => {
-    leave();
-})
-
-socket.on('connect', error => {
-    if(error){
-        return console.error(error);
-    }
-    register();
-    console.log("CONNECTED")
-})
-  
-socket.on('chat_msg', function(msg){
-    addMessageToListDOM(msg)
-    //msgSound()
-});
-
-socket.on('user_list', function(msg){
-    console.log(msg.users)
-    members = msg.users
-    updateMembersDOM();
-});
-
 function msgSound() {
     soundEffect(
       2000,           //frequency
