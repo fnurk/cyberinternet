@@ -1,6 +1,9 @@
 let members = [];
 
-var username = "haxxor"+(Math.floor(Math.random()*100));
+var username = ""//+(Math.floor(Math.random()*100));
+var register = false;
+//var registering = true
+var gameName = "The absolute unit of Game"
 
 export default class Chat{
     constructor(socket){
@@ -11,11 +14,23 @@ export default class Chat{
                 return;
             }
             DOM.input.value = '';
-            socket.emit('chat_msg', {"user": username, "message": msg});
+
+            if(username == "" && register){
+              username=msg;
+              connect();
+              register = false;
+            }else{
+              socket.emit('chat_msg', {"user": username, "message": msg});
+            }
             return false;
         });
 
         function register(){
+            socket.emit('chat_msg', {"user":"Server", "message":"Enter the name you wish to posses:"})
+            register = true;
+            //registering = false
+        }
+        function connect (){
             socket.emit('user_conn', {"user": username})
         }
 
@@ -34,10 +49,11 @@ export default class Chat{
             register();
             console.log("CONNECTED")
         })
-        
+
         socket.on('chat_msg', function(msg){
-            addMessageToListDOM(msg)
-            //msgSound()
+          if(msg.user != ""){
+              addMessageToListDOM(msg);
+          }
         });
 
         socket.on('user_list', function(msg){
@@ -88,7 +104,7 @@ function addMessageToListDOM(message) {
         el.scrollTop = el.scrollHeight - el.clientHeight;
     }
 }
-    
+
 function msgSound() {
     soundEffect(
       2000,           //frequency
